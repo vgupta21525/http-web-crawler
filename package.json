@@ -19,5 +19,8 @@
   "homepage": "https://github.com/vgupta21525/http-web-crawler.git#readme",
   "devDependencies": {
     "jest": "^30.0.3"
+  },
+  "dependencies": {
+    "jsdom": "^26.1.0"
   }
 }
