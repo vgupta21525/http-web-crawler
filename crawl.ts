@@ -1,23 +1,38 @@
 import { JSDOM } from 'jsdom';
 
-async function crawlPage(currentURL: string) {
-    console.log(`Actively crawling: ${currentURL}`);
+async function crawlPage(baseURL: string, currentURL: string, pages: Record<string, number>) {
+    const baseURLObj: URL = new URL(baseURL);
+    const currentURLObj: URL = new URL(currentURL);
+    if (baseURLObj.hostname !== currentURLObj.hostname) {
+        return pages;
+    }
+
+    const normalizedCurrentURL = normalizeURL(currentURL);
+    if (pages[normalizedCurrentURL] > 0) {
+        pages[normalizedCurrentURL]++;
+        return pages;
+    }
+    pages[normalizedCurrentURL] = 1;
     
+    console.log(`Actively crawling: ${currentURL}`);
     try {
         const response = await fetch(currentURL);
         if (response.status > 399) {
             console.log(`Error in fetch with status code: ${response.status} on page: ${currentURL}`);
-            return;
+            return pages;
         }
 
         const contentType = response.headers.get('content-type');
         if (!contentType?.includes('text/html')) {
             console.log(`Non-HTML response, content-type: ${contentType} on page: ${currentURL}`);
-            return;
+            return pages;
         }
 
-
-        console.log(await response.text());
+        const htmlBody = await response.text();
+        const nextURLs = getURLsFromHTML(htmlBody, baseURL);
+        for (const nextURL of nextURLs) {
+            pages = await crawlPage(baseURL, nextURL, pages);
+        }
     } catch (err) {
         if (err instanceof Error) {
             console.log(`Error while fetching ${currentURL}: ${err.message}`);
@@ -26,6 +41,8 @@ async function crawlPage(currentURL: string) {
             console.log(`Unexpected error while fetching ${currentURL}: ${err}`);
         }
     }
+
+    return pages;
 }
 
 function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
