@@ -57,9 +57,9 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
                 urls.push(urlObj.href);
             } catch (err) {
                 if (err instanceof Error) {
-                    console.log(`Error with relative URL: ${err.message}`);
+                    console.log(`Error with relative URL: ${linkElement.href} and base URL: ${baseURL} with message: ${err.message}`);
                 } else {
-                    console.log(`Unknown error with relative URL: ${err}`);
+                    console.log(`Unknown error with relative URL: ${linkElement.href} and base URL: ${baseURL} Error: ${err}`);
                 }
             }
         } else {
@@ -70,9 +70,9 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
             }
             catch (err) {
                 if (err instanceof Error) {
-                    console.log(`Error with absolute URL: ${err}`);
+                    console.log(`Error with absolute URL: ${linkElement.href} with message: ${err.message}`);
                 } else {
-                    console.log(`Unknown error with absolute URL: ${err}`);
+                    console.log(`Unknown error with absolute URL: ${linkElement.href} Error: ${err}`);
                 }
             }
         }

@@ -1,4 +1,5 @@
 import { crawlPage } from "./crawl";
+import { printReport } from "./report";
 
 async function main(): Promise<void> {
     if (process.argv.length < 3) {
@@ -12,10 +13,7 @@ async function main(): Promise<void> {
     const baseURL: string = process.argv[2];
     console.log(`Starting web crawler for ${baseURL}`);
     const pages: Record<string, number> = await crawlPage(baseURL, baseURL, {});
-
-    for (const page of Object.entries(pages)) {
-        console.log(page);
-    }
+    printReport(pages);
 }
 
 main();
