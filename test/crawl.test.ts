@@ -1,4 +1,4 @@
-import { normalizeURL, getURLsFromHTML } from './crawl';
+import { normalizeURL, getURLsFromHTML } from '../src/crawl';
 import { test, expect } from '@jest/globals';
 
 test('normalizeURL strip protocol', () => {
