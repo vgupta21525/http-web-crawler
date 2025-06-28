@@ -1,5 +1,5 @@
-import { crawlPage } from "./crawl";
-import { printReport } from "./report";
+import { crawlPage } from "../src/crawl";
+import { printReport } from "../src/report";
 
 async function main(): Promise<void> {
     if (process.argv.length < 3) {

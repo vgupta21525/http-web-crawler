@@ -3,9 +3,6 @@ import { JSDOM } from 'jsdom';
 async function crawlPage(baseURL: string, currentURL: string, pages: Record<string, number>) {
     const baseURLObj: URL = new URL(baseURL);
     const currentURLObj: URL = new URL(currentURL);
-    if (baseURLObj.hostname !== currentURLObj.hostname) {
-        return pages;
-    }
 
     const normalizedCurrentURL = normalizeURL(currentURL);
     if (pages[normalizedCurrentURL] > 0) {
@@ -13,6 +10,10 @@ async function crawlPage(baseURL: string, currentURL: string, pages: Record<stri
         return pages;
     }
     pages[normalizedCurrentURL] = 1;
+    
+    if (baseURLObj.hostname !== currentURLObj.hostname) {
+        return pages;
+    }
     
     console.log(`Actively crawling: ${currentURL}`);
     try {
