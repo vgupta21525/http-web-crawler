@@ -1,6 +1,11 @@
 import { JSDOM } from 'jsdom';
+import { logError } from './util/log';
 
-async function crawlPage(baseURL: string, currentURL: string, pages: Record<string, number>) {
+async function crawlPage(
+    baseURL: string,
+    currentURL: string,
+    pages: Record<string, number>
+): Promise<Record<string, number>> {
     const baseURLObj: URL = new URL(baseURL);
     const currentURLObj: URL = new URL(currentURL);
 
@@ -35,15 +40,23 @@ async function crawlPage(baseURL: string, currentURL: string, pages: Record<stri
             pages = await crawlPage(baseURL, nextURL, pages);
         }
     } catch (err) {
-        if (err instanceof Error) {
-            console.log(`Error while fetching ${currentURL}: ${err.message}`);
-        }
-        else {
-            console.log(`Unexpected error while fetching ${currentURL}: ${err}`);
-        }
+        logError(err, `fetching ${currentURL}`);
     }
 
     return pages;
+}
+
+async function isValidURL(urlString: string): Promise<number> {
+    try {
+        const response = await fetch(urlString, {
+            'method': 'HEAD',
+            'redirect': 'manual'
+        });
+        return response.status;
+    } catch (err) {
+        logError(err, `requesting headers for ${urlString}`);
+        return 0;
+    }
 }
 
 function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
@@ -57,11 +70,7 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
                 const urlObj: URL = new URL(`${baseURL}${linkElement.href}`);
                 urls.push(urlObj.href);
             } catch (err) {
-                if (err instanceof Error) {
-                    console.log(`Error with relative URL: ${linkElement.href} and base URL: ${baseURL} with message: ${err.message}`);
-                } else {
-                    console.log(`Unknown error with relative URL: ${linkElement.href} and base URL: ${baseURL} Error: ${err}`);
-                }
+                logError(err, `parsing relative URL: ${linkElement.href} and base URL: ${baseURL}`);
             }
         } else {
             // absolute URL
@@ -70,11 +79,7 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
                 urls.push(linkElement.href);
             }
             catch (err) {
-                if (err instanceof Error) {
-                    console.log(`Error with absolute URL: ${linkElement.href} with message: ${err.message}`);
-                } else {
-                    console.log(`Unknown error with absolute URL: ${linkElement.href} Error: ${err}`);
-                }
+                logError(err, `parsing URL: ${linkElement.href}`);
             }
         }
     }
