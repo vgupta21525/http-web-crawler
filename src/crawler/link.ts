@@ -7,6 +7,7 @@ export class Link {
     status: number | null;
     contentType?: string | null;
     sources: Set<Link>;
+    timesLinked: number;
     isInternal: boolean;
 
     constructor (url: string, baseURL?: Link, origin?: Link) {
@@ -24,6 +25,7 @@ export class Link {
         this.urlString = normalizeURL(this.url);
         this.status = null;
         this.sources = new Set();
+        this.timesLinked = 0;
         if (origin) {
             this.sources.add(origin);
         }
@@ -34,10 +36,11 @@ export class Link {
         try {
             const response = await fetch(this.url, {
                 'method': 'HEAD',
-                'redirect': 'manual'
+                // 'redirect': 'manual'
             });
             this.status = response.status;
             this.contentType = response.headers?.get('content-type');
+            // console.log(response);
         } catch (err) {
             logError(err, `while fetching headers for URL: ${this.urlString}`);
         }

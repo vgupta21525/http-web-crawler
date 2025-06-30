@@ -1,5 +1,6 @@
 import { getURLsFromHTML } from "../parser/html-parser";
 import { logError } from "../util/log-utils";
+import { normalizeURL } from "../util/url-utils";
 import { Link } from "./link";
 
 export class Crawler {
@@ -37,8 +38,9 @@ export class Crawler {
 
             for (const url of urls) {
                 const childLink = this.getLinkforURL(url, sourceLink);
+                childLink.timesLinked += 1;
                 if (childLink.isInternal) {
-                    this.crawlPage(childLink, currentLink);
+                    await this.crawlPage(childLink, currentLink);
                 }
             }
         }
@@ -49,7 +51,7 @@ export class Crawler {
     }
 
     private getLinkforURL(url: string, sourceLink?: Link): Link {
-        let link = this.linkMap.get(url);
+        let link = this.linkMap.get(normalizeURL(url));
         if (!link) {
             link = new Link(url, this.baseLink, sourceLink);
             this.linkMap.set(link.urlString, link);
