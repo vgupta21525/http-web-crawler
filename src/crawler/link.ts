@@ -5,6 +5,7 @@ export class Link {
     url: URL;
     urlString: string;
     status: number | null;
+    statusText?: string;
     contentType?: string | null;
     sources: Set<Link>;
     timesLinked: number;
@@ -39,6 +40,7 @@ export class Link {
                 // 'redirect': 'manual'
             });
             this.status = response.status;
+            this.statusText = response.statusText;
             this.contentType = response.headers?.get('content-type');
         } catch (err) {
             logError(err, `while fetching headers for URL: ${this.urlString}`);

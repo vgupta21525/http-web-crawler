@@ -19,7 +19,9 @@ export function printReport(crawler: Crawler): void {
     console.log(`\nInternal Links Summary: ${internal.length} links`);
     for (const [category, links] of Object.entries(internalStatus)) {
         console.log(`\n${category}: ${links.length} links`)
-        links.forEach(link => console.log(`Found ${link.timesLinked} links to URL: ${link.urlString}`));
+        links.forEach(link => {
+            console.log(`Found ${link.timesLinked} links to URL: ${link.urlString} with status: ${link.status} (${link.statusText})`);
+        });
     }
 
     const external = [...crawler.linkMap.values()]
@@ -35,7 +37,9 @@ export function printReport(crawler: Crawler): void {
     console.log(`\nExternal Links Summary: ${external.length} links`);
     for (const [category, links] of Object.entries(externalStatus)) {
         console.log(`\n${category}: ${links.length} links`)
-        links.forEach(link => console.log(`Found ${link.timesLinked} links to URL: ${link.urlString}`));
+        links.forEach(link => {
+            console.log(`Found ${link.timesLinked} links to URL: ${link.urlString} with status: ${link.status} (${link.statusText})`);
+        });
     }
 
     console.log('===============');
