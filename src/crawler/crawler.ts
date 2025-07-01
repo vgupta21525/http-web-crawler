@@ -39,9 +39,7 @@ export class Crawler {
             for (const url of urls) {
                 const childLink = this.getLinkforURL(url, sourceLink);
                 childLink.timesLinked += 1;
-                if (childLink.isInternal) {
-                    await this.crawlPage(childLink, currentLink);
-                }
+                await this.crawlPage(childLink, currentLink);
             }
         }
         catch (error) {
