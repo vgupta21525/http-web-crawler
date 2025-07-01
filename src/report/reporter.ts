@@ -39,6 +39,9 @@ export function printReport(crawler: Crawler): void {
         console.log(`\n${category}: ${links.length} links`)
         links.forEach(link => {
             console.log(`Found ${link.timesLinked} links to URL: ${link.urlString} with status: ${link.status} (${link.statusText})`);
+            if (link.statusCategory === 'Redirect') {
+                console.log(`${link.urlString} -> ${link.redirectsTo}`);
+            }
         });
     }
 

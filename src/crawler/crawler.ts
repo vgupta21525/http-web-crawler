@@ -26,6 +26,10 @@ export class Crawler {
         this.visitedLinks.add(currentLink);
 
         await currentLink.checkStatus();
+        if (currentLink.isRedirectLink()) {
+            await this.handleRedirects(currentLink);
+            return;
+        }
         if (!currentLink.isParseable()) {
             return;
         }
@@ -46,6 +50,16 @@ export class Crawler {
             currentLink.status = null;
             logError(error, `fetching HTML response for URL: ${currentLink.url}`);
         }
+    }
+
+    private async handleRedirects(currentLink: Link): Promise<void> {
+        if (!currentLink.redirectsTo) {
+            console.log(`The URL: ${currentLink.urlString} does not redirect to any location.`);
+            return;
+        }
+        const redirectLink = this.getLinkforURL(currentLink.redirectsTo, currentLink);
+        console.log(`URL ${currentLink.urlString} redirects to URL ${redirectLink.urlString}`);
+        await this.crawlPage(redirectLink, currentLink);
     }
 
     private getLinkforURL(url: string, sourceLink?: Link): Link {
