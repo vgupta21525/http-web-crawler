@@ -40,7 +40,6 @@ export class Link {
             });
             this.status = response.status;
             this.contentType = response.headers?.get('content-type');
-            // console.log(response);
         } catch (err) {
             logError(err, `while fetching headers for URL: ${this.urlString}`);
         }
@@ -53,5 +52,13 @@ export class Link {
             && (this.contentType?.includes('text/html') ?? false)
             && this.isInternal
         );
+    }
+
+    get statusCategory(): string {
+        if (this.status === null) return 'Failed';
+        else if (this.status >= 200 && this.status < 300) return 'OK';
+        else if (this.status >= 300 && this.status < 400) return 'Redirect';
+        else if (this.status >= 400 && this.status < 600) return 'Broken';
+        else return `Unknown status: ${this.status}`;
     }
 }
