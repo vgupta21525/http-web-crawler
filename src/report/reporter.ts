@@ -42,13 +42,29 @@ export function printReport(crawler: Crawler): void {
         console.log(`\n${category}: ${links.length} links`)
         links.forEach(link => {
             console.log(`Found ${link.timesLinked} links to URL: ${link.urlString} with status: ${link.status} (${link.statusText})`);
-            if (link.statusCategory === 'Redirect') {
-                console.log(`${link.urlString} -> ${link.redirectsTo}`);
-            }
+            printRedirectLinks(link);
+            printBrokenLinkSources(link);
         });
     }
 
     console.log('===============');
     console.log('END REPORT');
     console.log('===============');
+}
+
+function printRedirectLinks(link: Link): void {
+    if (link.statusCategory === 'Redirect') {
+        console.log(`${link.urlString} -> ${link.redirectsTo}`);
+    }
+}
+
+function printBrokenLinkSources(link: Link): void {
+    if (!['Broken', 'Failed'].includes(link.statusCategory)) {
+        return;
+    }
+    console.log(`${link.urlString} is referenced in ${link.sources.size} pages:`)
+    const sources: Set<Link> = new Set(link.sources);
+    sources.forEach((source) => {
+        console.log(`\t${source.urlString}`);
+    });
 }
