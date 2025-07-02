@@ -15,14 +15,14 @@ export class Link {
     constructor (url: string, baseURL?: Link, origin?: Link) {
         const normalizedURL = normalizeURL(url);
         try {
-            this.url = new URL(url);
+            this.url = new URL(url, origin?.url);
         }
         catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Invalid URL: ${error.message}`);
+                throw new Error(`Invalid URL: ${url}: ${error.message}`);
             }
             else {
-                throw new Error(`Could not parse URL because ${error}`);
+                throw new Error(`Could not parse URL: ${url} because ${error}`);
             }
         }
         this.urlString = normalizedURL;

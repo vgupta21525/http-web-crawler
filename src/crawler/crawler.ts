@@ -35,20 +35,29 @@ export class Crawler {
         }
 
         console.log(`Actively crawling ${currentLink.urlString}`);
+        let urls: string[] = [];
         try {
             const response = await fetch(currentLink.url);
             const htmlBody = await response.text();
-            const urls = getURLsFromHTML(htmlBody, this.baseLink);
-
-            for (const url of urls) {
-                const childLink = this.getLinkforURL(url, sourceLink);
-                childLink.timesLinked += 1;
-                await this.crawlPage(childLink, currentLink);
-            }
+            urls = getURLsFromHTML(htmlBody, this.baseLink);
         }
         catch (error) {
             currentLink.status = null;
             logError(error, `fetching HTML response for URL: ${currentLink.url}`);
+        }
+
+        for (const url of urls) {
+            let childLink: Link;
+            try {
+                childLink = this.getLinkforURL(url, currentLink);
+            }
+            catch (error) {
+                logError(error, `parsing child link: ${url} for URL: ${currentLink.urlString}`);
+                continue;
+            }
+
+            childLink.timesLinked += 1;
+            await this.crawlPage(childLink, currentLink);
         }
     }
 
@@ -57,13 +66,22 @@ export class Crawler {
             console.log(`The URL: ${currentLink.urlString} does not redirect to any location.`);
             return;
         }
-        const redirectLink = this.getLinkforURL(currentLink.redirectsTo, currentLink);
+
+        let redirectLink: Link;
+        try {
+            redirectLink = this.getLinkforURL(currentLink.redirectsTo, currentLink);
+        }
+        catch (error) {
+            logError(error, `parsing redirect target: ${currentLink.redirectsTo} for URL: ${currentLink.urlString}`);
+            return;
+        }
+
         console.log(`URL ${currentLink.urlString} redirects to URL ${redirectLink.urlString}`);
         await this.crawlPage(redirectLink, currentLink);
     }
 
     private getLinkforURL(url: string, sourceLink?: Link): Link {
-        let link = this.linkMap.get(normalizeURL(url));
+        let link = this.linkMap.get(normalizeURL(url, sourceLink?.url));
         if (!link) {
             link = new Link(url, this.baseLink, sourceLink);
             this.linkMap.set(link.urlString, link);
