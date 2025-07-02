@@ -57,6 +57,10 @@ export class Crawler {
             }
 
             childLink.timesLinked += 1;
+            if (childLink.redirectsTo) {
+                const redirectLink: Link = this.getLinkforURL(childLink.redirectsTo);
+                redirectLink.timesLinked += 1;
+            }
             await this.crawlPage(childLink, currentLink);
         }
     }
@@ -70,6 +74,8 @@ export class Crawler {
         let redirectLink: Link;
         try {
             redirectLink = this.getLinkforURL(currentLink.redirectsTo, currentLink);
+            redirectLink.timesLinked += 1;
+            currentLink.redirectsTo = redirectLink.urlString;
         }
         catch (error) {
             logError(error, `parsing redirect target: ${currentLink.redirectsTo} for URL: ${currentLink.urlString}`);

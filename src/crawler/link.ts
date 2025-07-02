@@ -13,7 +13,7 @@ export class Link {
     redirectsTo?: string;
 
     constructor (url: string, baseURL?: Link, origin?: Link) {
-        const normalizedURL = normalizeURL(url);
+        const normalizedURL = normalizeURL(url, origin?.url);
         try {
             this.url = new URL(url, origin?.url);
         }
