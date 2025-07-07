@@ -5,27 +5,29 @@ import { Link } from "./link";
 
 export class Crawler {
     private baseLink: Link;
+    private retries: number;
     private visitedLinks: Set<Link>;
     public linkMap: Map<string, Link>;
 
-    constructor (baseURL: string) {
+    constructor (baseURL: string, retries: number) {
         this.baseLink = new Link(baseURL);
         this.visitedLinks = new Set();
         this.linkMap = new Map();
         this.linkMap.set(this.baseLink.urlString, this.baseLink);
+        this.retries = retries;
     }
 
     async start(): Promise<void> {
         await this.crawlPage(this.baseLink);
     }
 
-    private async crawlPage(currentLink: Link, sourceLink?: Link): Promise<void> {
+    private async crawlPage(currentLink: Link): Promise<void> {
         if (this.visitedLinks.has(currentLink)) {
             return;
         }
         this.visitedLinks.add(currentLink);
 
-        await currentLink.checkStatus();
+        await currentLink.checkStatus(this.retries);
         if (currentLink.isRedirectLink()) {
             await this.handleRedirects(currentLink);
             return;
@@ -61,7 +63,7 @@ export class Crawler {
                 const redirectLink: Link = this.getLinkforURL(childLink.redirectsTo);
                 redirectLink.timesLinked += 1;
             }
-            await this.crawlPage(childLink, currentLink);
+            await this.crawlPage(childLink);
         }
     }
 
@@ -83,7 +85,7 @@ export class Crawler {
         }
 
         console.log(`URL ${currentLink.urlString} redirects to URL ${redirectLink.urlString}`);
-        await this.crawlPage(redirectLink, currentLink);
+        await this.crawlPage(redirectLink);
     }
 
     private getLinkforURL(url: string, sourceLink?: Link): Link {

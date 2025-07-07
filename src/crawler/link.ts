@@ -35,24 +35,39 @@ export class Link {
         this.isInternal = baseURL ? baseURL.domainName === this.domainName : true;
     }
 
-    async checkStatus(): Promise<void> {
-        try {
-            const response = await fetch(this.url, {
-                'method': 'HEAD',
-                'redirect': 'manual'
-            });
-            this.status = response.status;
-            this.statusText = response.statusText;
-            this.contentType = response.headers?.get('content-type');
+    async checkStatus(retries: number): Promise<void> {
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                const controller = new AbortController();
+                const abortTimeout: NodeJS.Timeout = setTimeout(() => controller.abort(), 5000);
+                const response = await fetch(this.url, {
+                    'method': 'HEAD',
+                    'redirect': 'manual',
+                    'signal': controller.signal
+                });
+                clearTimeout(abortTimeout);
 
-            if (this.status >= 300 && this.status < 400) {
-                const location = response.headers?.get('location');
-                if (location) {
-                    this.redirectsTo = location;
+                this.status = response.status;
+                this.statusText = response.statusText;
+                this.contentType = response.headers?.get('content-type');
+                if (this.status >= 300 && this.status < 400) {
+                    const location = response.headers?.get('location');
+                    if (location) {
+                        this.redirectsTo = location;
+                    }
                 }
+
+                return;
+            } catch (err) {
+                if (attempt === retries) {
+                    logError(err, `while fetching headers for URL: ${this.urlString}`);
+                    this.status = null;
+                    return;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 300));
+                console.log(`Retrying fetch headers for ${this.urlString}: Attempt ${attempt + 1} of ${retries}`);
             }
-        } catch (err) {
-            logError(err, `while fetching headers for URL: ${this.urlString}`);
         }
     }
 
